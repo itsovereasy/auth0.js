@@ -11,7 +11,6 @@ var qs                = require('qs');
 var xtend             = require('xtend');
 var trim              = require('trim');
 var reqwest           = require('reqwest');
-var WinChan           = require('winchan');
 
 var jsonp             = require('jsonp');
 var jsonpOpts         = { param: 'cbx', timeout: 8000, prefix: '__auth0jp' };
@@ -930,64 +929,7 @@ Auth0.prototype.loginPhonegap = function (options, callback) {
  */
 
 Auth0.prototype.loginWithPopup = function(options, callback) {
-  var _this = this;
-
-  if (!callback) {
-    throw new Error('popup mode should receive a mandatory callback');
-  }
-
-  var qs = [this._getMode(options), options, { client_id: this._clientID, owp: true }];
-
-  if (this._sendClientInfo) {
-    qs.push({ auth0Client: this._getClientInfoString() });
-  }
-
-  var query = this._buildAuthorizeQueryString(qs);
-  var popupUrl = joinUrl('https:', this._domain, '/authorize?' + query);
-
-  var popupPosition = this._computePopupPosition(options.popupOptions);
-  var popupOptions = xtend(popupPosition, options.popupOptions);
-
-  var popup = WinChan.open({
-    url: popupUrl,
-    relay_url: 'https://' + this._domain + '/relay.html',
-    window_features: stringifyPopupSettings(popupOptions)
-  }, function (err, result) {
-    // Eliminate `_current_popup` reference manually because
-    // Winchan removes `.kill()` method from window and also
-    // doesn't call `.kill()` by itself
-    _this._current_popup = null;
-
-    // Winchan always returns string errors, we wrap them inside Error objects
-    if (err) {
-      return callback(new LoginError(err), null, null, null, null, null);
-    }
-
-    // Handle edge case with generic error
-    if (!result) {
-      return callback(new LoginError('Something went wrong'), null, null, null, null, null);
-    }
-
-    // Handle profile retrieval from id_token and respond
-    if (result.id_token) {
-      return callback(null, _this._prepareResult(result));
-    }
-
-    // Case where the error is returned at an `err` property from the result
-    if (result.err) {
-      return callback(new LoginError(result.err.status, result.err.details || result.err), null, null, null, null, null);
-    }
-
-    // Case for sso_dbconnection_popup returning error at result.error instead of result.err
-    if (result.error) {
-      return callback(new LoginError(result.status, result.details || result), null, null, null, null, null);
-    }
-
-    // Case we couldn't match any error, we return a generic one
-    return callback(new LoginError('Something went wrong'), null, null, null, null, null);
-  });
-
-  popup.focus();
+  return;
 };
 
 /**
